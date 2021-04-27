@@ -9,32 +9,25 @@ namespace GameOfLife
     {
         private readonly int _rows;
         private readonly int _columns;
-
         private bool _runSimulation;
-        private CellStatus[,] _grid;
 
-        public Simulation()
-        {
-            _rows = 25;
-            _columns = 50;
-            InitGrid();
-        }
 
         public Simulation(int rows, int columns)
         {
             _rows = rows;
             _columns = columns;
-            InitGrid();
         }
 
         public void Start()
         {
             _runSimulation = true;
             
+            var grid = InitGrid();
+            
             while(_runSimulation)
             {
-                PrintGrid(_grid);
-                _grid = NextGeneration();
+                PrintGrid(grid);
+                grid = NextGeneration(grid);
             }
         }
 
@@ -43,29 +36,31 @@ namespace GameOfLife
             _runSimulation = false;
         }
 
-        private void InitGrid()
-        {
-            _grid = new CellStatus[_rows, _columns];
+        private CellStatus[,] InitGrid()
+        { 
+            var grid = new CellStatus[_rows, _columns];
 
             for (var row = 0; row < _rows; row++)
             {
                 for (var column = 0; column < _columns; column++)
                 {
-                    _grid[row, column] = (CellStatus) RandomNumberGenerator.GetInt32(0, 2);
+                    grid[row, column] = (CellStatus) RandomNumberGenerator.GetInt32(0, 2);
                 }
             }
+
+            return grid;
         }
 
-        private CellStatus[,] NextGeneration()
+        private CellStatus[,] NextGeneration(CellStatus[,] currentGrid)
         {
-            var nextGenerationGrid = _grid;
+            var nextGenerationGrid = currentGrid;
             
             for (var row = 1; row < _rows - 1; row++)
             for (var column = 1; column < _columns - 1; column++)    
             {
-                var aliveNeighbours = CalculateAliveNeighbours(row, column);
+                var aliveNeighbours = CalculateAliveNeighbours(row, column, currentGrid);
 
-                var currentCell = _grid[row, column];
+                var currentCell = currentGrid[row, column];
 
                 if (currentCell == CellStatus.Alive && aliveNeighbours < 2)
                 {
@@ -109,14 +104,14 @@ namespace GameOfLife
         }
         
         
-        private int CalculateAliveNeighbours(int rowIndex, int columnIndex)
+        private int CalculateAliveNeighbours(int rowIndex, int columnIndex, CellStatus[,] grid)
         {
             var aliveNeighbours = 0;
             for (var i = -1; i <= 1; i++)
             {
                 for (var j = -1; j <= 1; j++)
                 {
-                    aliveNeighbours += _grid[rowIndex + i, columnIndex + j] == CellStatus.Alive ? 1 : 0;
+                    aliveNeighbours += grid[rowIndex + i, columnIndex + j] == CellStatus.Alive ? 1 : 0;
                 }
             }
 
